@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="3902da5f-78cd-4965-82f1-5a1dd0381720" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<jms:config name="JMSConfigInnerVMActiveMQ" doc:name="JMS Config" doc:id="285b6dfc-a637-4886-9223-6871a742af6c" >
+		<jms:active-mq-connection >
+			<jms:factory-configuration />
+		</jms:active-mq-connection>
+	</jms:config>
+	<flow name="publisher-inner-vm" doc:id="1f379d0b-1e06-4be5-bb9f-104a9f352c2a" >
+		<http:listener doc:name="POST /publish-vm" doc:id="924202d6-98cd-4a0d-97ff-7e158d28154f" config-ref="HTTP_Listener_config" path="/publish-vm" allowedMethods="POST"/>
+		<jms:publish doc:name="Publish" doc:id="1c0c5a52-e9aa-4956-8e09-d28901ada6fd" config-ref="JMSConfigInnerVMActiveMQ" destination="sample.queue" sendCorrelationId="AUTO"/>
+		<logger level="INFO" doc:name="Logger" doc:id="5fa17b04-37c4-4b33-9a36-aee9e80131f5" message='#["Message sent through JMS activeMQ"]'/>
+	</flow>
+	<flow name="consumer-inner-vm" doc:id="b3f458d3-3e3a-4183-adbb-b7a7d9cb5b1e" >
+		<jms:listener doc:name="On New Message" doc:id="77abbe5b-09c6-4e93-8663-d61b75bd9067" config-ref="JMSConfigInnerVMActiveMQ" destination="sample.queue"/>
+		<logger level="INFO" doc:name="Logs message payload" doc:id="3f3957b5-939a-47bf-8066-bf6c848dd6ae" message="#[message.payload]"/>
+	</flow>
+</mule>

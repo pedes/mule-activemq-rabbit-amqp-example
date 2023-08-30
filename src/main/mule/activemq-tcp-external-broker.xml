@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<jms:config name="activeMQTCPWireBroker" doc:name="JMS Config" doc:id="7f2e085d-2801-4324-aefd-2dcae605f015" >
+		<jms:active-mq-connection >
+			<jms:factory-configuration brokerUrl="tcp://localhost:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<flow name="publisher-external-broker-tcp" doc:id="3387fa51-58da-4df7-b50f-bd248d43d32d" >
+		<http:listener doc:name="POST /publish-tcp" doc:id="6a804704-481a-4c99-b99a-0d15dc8f127e" config-ref="HTTP_Listener_config" path="/publish-tcp" allowedMethods="POST"/>
+		<jms:publish doc:name="Publish sample.queue" doc:id="94b9b865-5c5c-41e1-a2a7-08fd9be8702a" config-ref="activeMQTCPWireBroker" destination="sample.queue"/>
+		<logger level="INFO" doc:name="Logger" doc:id="3180b49b-132b-41d0-bf98-2ebd86f3d7c8" message='#["Message sent through TCP to an external activeMQ broker"]'/>
+	</flow>
+	<flow name="consumer-external-broker-tcp" doc:id="ec7b3fc1-2f8a-4cbd-ad89-32683f0148aa" >
+		<jms:listener doc:name="On New Message" doc:id="6f5fabe1-adf2-4ec8-a789-287cb5c3b4b9" config-ref="activeMQTCPWireBroker" destination="sample.queue"/>
+		<logger level="INFO" doc:name="Logger" doc:id="09ffb03c-ca6b-46c7-afa5-719d085a61e8" message="#[message.payload]"/>
+	</flow>
+</mule>

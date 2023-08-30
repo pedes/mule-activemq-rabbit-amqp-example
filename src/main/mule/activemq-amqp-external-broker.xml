@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:amqp="http://www.mulesoft.org/schema/mule/amqp" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/amqp http://www.mulesoft.org/schema/mule/amqp/current/mule-amqp.xsd">
+<!-- 	<jms:config name="activeMQAMQPWireJMS" doc:name="JMS Config" doc:id="35f639c9-278f-4937-b7fd-3a1a6e968b2d" >
+		<jms:active-mq-connection >
+			<jms:factory-configuration brokerUrl="amqp://localhost:5672?transport.transformer=jms" />
+		</jms:active-mq-connection>
+	</jms:config> -->
+	<amqp:config name="AMQP_Config" doc:name="AMQP Config" doc:id="28c77fd7-64d9-48a9-8c93-1819ff42d042" >
+		<amqp:connection host="localhost" port="5672" username="guest" password="guest"/>
+	</amqp:config>
+<!-- 	<flow name="publish-amqp" doc:id="f98b77a9-909c-42c0-a3f3-ca956f82e184" >
+		<http:listener doc:name="POST /publish-amqp" doc:id="29091db6-a3be-48b5-9ff0-1970bfac5d21" config-ref="HTTP_Listener_config" path="/publish-amqp" allowedMethods="POST"/>
+		<jms:publish doc:name="Publish" doc:id="d31cc419-efca-48bd-9a27-45224563fdba" config-ref="activeMQAMQPWireJMS" destination="sample.queue" sendCorrelationId="AUTO"/>
+		<logger level="INFO" doc:name="Logger" doc:id="a694499b-5b47-46d7-8adb-28043df21711" message='#["Message sent to activeMQ Broker through AMQP Wire"]'/>
+	</flow> -->
+	<flow name="push-message-queue-amqp" doc:id="57f5c831-97bd-4262-9f8a-2443d0ceaec7" >
+		<http:listener doc:name="POST /publish-amqp" doc:id="c5960646-6401-48f6-b597-91027a1ac3fc" config-ref="HTTP_Listener_config" path="/publish-amqp" allowedMethods="POST"/>
+		<amqp:publish doc:name="Publish" doc:id="5de5a39b-b4a1-4763-9dc8-31b804913fb9" config-ref="AMQP_Config" exchangeName="sample.topic"/>
+		<ee:transform doc:name="response" doc:id="e296fc9e-43f7-415b-b7f0-e7dce3cc2fb7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"result" : "message delivered"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log " doc:id="2701b4c3-08b7-4888-aed4-1d2feb903df0" message='#[" message publish to AMQP"]' />
+	</flow>
+	<flow name="consumer-activemq-amqp-external-broker" doc:id="f1b67a40-80c9-4eca-9fb8-b97cebd8d501" >
+		<amqp:listener doc:name="Listener" doc:id="9fcfece0-580e-435a-9cfd-86567510201d" config-ref="AMQP_Config" queueName="sample.queue"/>
+		<logger level="INFO" doc:name="Logger" doc:id="0008aac7-aad9-423e-821d-302253211822" message="#[message.payload]"/>
+	</flow>
+</mule>
