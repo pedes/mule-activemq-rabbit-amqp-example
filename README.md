@@ -1,1 +1,1 @@
-# mule-activemq-rabbit-amqp-example
+# mule-activemq-amqp-example
